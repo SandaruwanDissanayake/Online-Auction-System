@@ -6,7 +6,7 @@
     <parent>
         <groupId>lk.jiat.auction</groupId>
         <artifactId>Online_Auction_System</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
 
     <artifactId>core</artifactId>

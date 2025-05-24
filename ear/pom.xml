@@ -6,15 +6,57 @@
     <parent>
         <groupId>lk.jiat.auction</groupId>
         <artifactId>Online_Auction_System</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
 
     <artifactId>ear</artifactId>
-
+    <packaging>ear</packaging>
+    <name>auction-ear</name>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>lk.jiat.auction</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>lk.jiat.auction</groupId>
+            <artifactId>web</artifactId>
+            <version>1.0</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>lk.jiat.auction</groupId>
+            <artifactId>ejb</artifactId>
+            <version>1.0</version>
+            <type>ejb</type>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>${project.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <defaultLibBundleDir>lib</defaultLibBundleDir>
+                    <modules>
+                        <webModule>
+                            <groupId>lk.jiat.auction</groupId>
+                            <artifactId>web</artifactId>
+                            <contextRoot>/</contextRoot>
+                        </webModule>
+                    </modules>
+                </configuration>
+
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
