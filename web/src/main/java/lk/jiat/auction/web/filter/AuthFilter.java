@@ -36,7 +36,12 @@ public class AuthFilter implements Filter {
 
         // Redirect to login if not authenticated
         if (session == null || session.getAttribute("username") == null) {
-            response.sendRedirect(request.getContextPath() + "login");
+            // Determine the appropriate login page based on the path
+            String loginPage = (path.startsWith("/auctioneer") || path.startsWith("/bidder"))
+                    ? "/auth/login.jsp"
+                    : request.getContextPath() + "/login";
+
+            response.sendRedirect(loginPage);
             return;
         }
 
@@ -44,7 +49,8 @@ public class AuthFilter implements Filter {
         String role = (String) session.getAttribute("role");
 
         if (path.startsWith("/auctioneer/") && !"AUCTIONEER".equals(role)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            //response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            response.sendRedirect(request.getContextPath() + "login");
             return;
         }
 
@@ -52,6 +58,7 @@ public class AuthFilter implements Filter {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
+
 
         chain.doFilter(request, response);
     }
