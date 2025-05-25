@@ -28,7 +28,7 @@ public class LoginServlet extends HttpServlet {
             userServiceBean.login(username, password);
 
             HttpSession session = req.getSession();
-            session.setAttribute("username", username);
+            session.setAttribute("email", username);
             session.setAttribute("role",
                     userServiceBean.isAuctioneer(username) ? "AUCTIONEER" : "BIDDER");
 
