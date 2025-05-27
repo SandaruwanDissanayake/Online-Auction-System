@@ -15,7 +15,9 @@ public class AuthFilter implements Filter {
             "/login.jsp",
             "/assets/",
             "/error/",
-            "/javax.faces.resource/"  // If using JSF
+            "/javax.faces.resource/",
+            "/index.jsp",
+            "/welcome.jsp"// If using JSF
     };
 
     @Override

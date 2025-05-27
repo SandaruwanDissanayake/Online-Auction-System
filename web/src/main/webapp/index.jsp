@@ -185,7 +185,7 @@
                          class="absolute h-full w-full object-cover hover:scale-105 transition duration-500">
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                         <div class="flex justify-between items-center text-sm">
-                            <sp<span class="text-white font-bold">Time Left: 3d 6h 42m</span>
+                            <span class="text-white font-bold">Time Left: 3d 6h 42m</span>
                         </div>
                         <div class="w-full bg-light/20 rounded-full h-1.5 mt-2">
                             <div class="bg-accent h-full rounded-full" style="width: 25%"></div>

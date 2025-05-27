@@ -8,6 +8,7 @@
     <artifactId>Online_Auction_System</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
+
     <modules>
         <module>web</module>
         <module>ear</module>
