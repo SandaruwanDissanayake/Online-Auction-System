@@ -1,3 +1,7 @@
+<%--<%@ taglib prefix="c" uri="http://java.sun.com/jstl/core" %>--%>
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%--
   Created by IntelliJ IDEA.
   User: sanda
@@ -145,6 +149,54 @@
             </div>
         </div>
     </div>
+    <%--    My bids Section--%>
+    <section class="mb-12">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">
+                <i class="fas fa-gavel text-accent mr-2"></i>My Bids
+            </h2>
+            <a href="browse" class="text-accent hover:underline flex items-center">
+                Browse All <i class="fas fa-chevron-right ml-1 text-sm"></i>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bid-card bg-secondary rounded-xl overflow-hidden relative ">
+            <div class="relative pb-[70%]">
+                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"
+                     class="absolute h-full w-full object-cover">
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+                    <div class="flex justify-between items-center text-sm mb-2">
+                        <span class="font-medium text-light">Ends in 3d 4h</span>
+                        <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">OUTBID</span>
+                    </div>
+                    <div class="w-full bg-light/20 rounded-full h-1.5">
+                        <div class="progress-bar rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-bold mb-2">Hermès Birkin 25</h3>
+                <p class="text-light/70 text-sm mb-4">Togo Leather • Gold Hardware</p>
+
+                <div class="space-y-3 mb-5">
+                    <div class="flex justify-between">
+                        <span class="text-light/60">Your bid</span>
+                        <span class="font-bold text-red-400">$12,000</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-light/60">Highest bid</span>
+                        <span class="font-bold">$14,250</span>
+                    </div>
+                </div>
+
+                <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">
+                    <i class="fas fa-gavel mr-2"></i>Place New Bid
+                </button>
+            </div>
+        </div>
+        </div>
+    </section>
+
 
     <!-- Active Bids Section -->
     <section class="mb-12">
@@ -158,6 +210,45 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <c:forEach items="${auctions}" var="auctions">
+                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
+                    <div class="relative pb-[70%]">
+                        <img src="${pageContext.request.contextPath}/${auctions.imagePath}"
+                             class="absolute h-full w-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+                            <div class="flex justify-between items-center text-sm mb-2">
+                                <span class="font-medium text-light">Ends in : ${auctions.getEndTime()}</span>
+                                <span class="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs">${auctions.getStatus()}</span>
+                            </div>
+                            <div class="w-full bg-light/20 rounded-full h-1.5">
+                                <div class="progress-bar rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">${auctions.getTitle()}</h3>
+                        <p class="text-light/70 text-sm mb-4">${auctions.getDescription()}</p>
+
+                        <div class="space-y-3 mb-5">
+                            <div class="flex justify-between">
+                                <span class="text-light/60">Current bid</span>
+                                <span class="font-bold">$${auctions.getCurrentBid()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-light/60">Reserve</span>
+                                <span class="font-bold text-green-400">Met</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">
+                            <i class="fas fa-hand-paper mr-2"></i>Place Bid
+                        </button>
+                    </div>
+                </div>
+
+            </c:forEach>
+
             <!-- Winning Bid Card -->
             <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
                 <div class="relative pb-[70%]">
@@ -269,6 +360,8 @@
                 </div>
             </div>
         </div>
+
+
     </section>
 
     <!-- Recent Activity -->
@@ -396,7 +489,7 @@
     }
 
     // Update every 30 seconds
-    setInterval(updateBidStatus, 30000);
+    //setInterval(updateBidStatus, 30000);
 
     // Initialize tooltips
     document.querySelectorAll('[data-tooltip]').forEach(el => {

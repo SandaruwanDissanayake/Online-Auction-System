@@ -200,6 +200,31 @@
             });
         });
     });
+
+    function previewImage(input) {
+        const preview = document.getElementById('image-preview');
+        const noImage = document.getElementById('no-image');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                noImage.classList.add('hidden');
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Initialize date picker with minimum of current datetime
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        const timezoneOffset = now.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
+        document.getElementById('endTime').min = localISOTime;
+    });
 </script>
 </body>
 </html>

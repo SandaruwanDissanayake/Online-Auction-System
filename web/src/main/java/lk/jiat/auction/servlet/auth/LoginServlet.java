@@ -34,7 +34,7 @@ public class LoginServlet extends HttpServlet {
 
             String redirect = userServiceBean.isAuctioneer(username)
                     ? "auctioneer/dashboard.jsp"
-                    : "bidder/dashboard.jsp";
+                    : "loadBidderDashboard";
             resp.sendRedirect(redirect);
 
         } catch (Exception e) {
