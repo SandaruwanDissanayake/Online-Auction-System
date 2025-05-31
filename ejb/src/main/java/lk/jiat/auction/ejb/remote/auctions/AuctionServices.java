@@ -10,6 +10,6 @@ import java.util.List;
 public interface AuctionServices {
     void addAuction(Auction auction);
     void removeAuction(Auction auction);
-    Auction getAuction(int auctionId);
+    Auction getAuction(Long auctionId);
     List<Auction> getAuctions();
 }

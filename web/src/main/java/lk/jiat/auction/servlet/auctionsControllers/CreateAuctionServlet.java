@@ -61,6 +61,7 @@ public class CreateAuctionServlet extends HttpServlet {
                 String imagePath = handleImageUpload(filePart, auctionID);
                 auction.setImagePath(imagePath);
             }
+            auction.setLastBidderEmail(null);
 
 
             System.out.println(auction.getTitle());

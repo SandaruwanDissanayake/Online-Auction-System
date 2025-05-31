@@ -4,6 +4,8 @@ import jakarta.ejb.Remote;
 import lk.jiat.auction.core.model.auth.User;
 
 import java.util.List;
+import java.util.Optional;
+
 @Remote
 public interface UserService {
     void addUser(User user);

@@ -10,16 +10,17 @@ public class Auction implements Serializable {
     private String title;
     private String description;
     private BigDecimal startingPrice;
-    private BigDecimal currentBid;
+    private BigDecimal currentBid = BigDecimal.ZERO.setScale(2);
     private String imagePath;
     private Date startTime;
     private Date endTime;
-    private AuctionStatus status;
-
+    private AuctionStatus status =AuctionStatus.ACTIVE;
+    private BigDecimal bidIncrement;
+    private String lastBidderEmail;
     public Auction() {
     }
 
-    public Auction(Long id, String title, String description, BigDecimal startingPrice, BigDecimal currentBid, String imagePath,  Date startTime, Date endTime, AuctionStatus status) {
+    public Auction(Long id, String title, String description, BigDecimal startingPrice, BigDecimal currentBid, String imagePath,  Date startTime, Date endTime, AuctionStatus status,String lastBidderEmail) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -29,6 +30,23 @@ public class Auction implements Serializable {
         this.imagePath=imagePath;
         this.endTime = endTime;
         this.status = status;
+        this.lastBidderEmail = lastBidderEmail;
+    }
+
+    public String getLastBidderEmail() {
+        return lastBidderEmail;
+    }
+
+    public void setLastBidderEmail(String lastBidderEmail) {
+        this.lastBidderEmail = lastBidderEmail;
+    }
+
+    public BigDecimal getBidIncrement() {
+        return bidIncrement;
+    }
+
+    public void setBidIncrement(BigDecimal bidIncrement) {
+        this.bidIncrement = bidIncrement;
     }
 
     public String getImagePath() {

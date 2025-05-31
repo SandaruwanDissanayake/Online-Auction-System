@@ -241,9 +241,10 @@
                             </div>
                         </div>
 
-                        <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">
-                            <i class="fas fa-hand-paper mr-2"></i>Place Bid
-                        </button>
+                        <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"
+                           class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">
+                            <i class="fas fa-gavel mr-2"></i>Place Bid
+                        </a>
                     </div>
                 </div>
 

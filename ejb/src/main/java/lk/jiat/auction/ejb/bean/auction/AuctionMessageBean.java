@@ -20,13 +20,13 @@ public class AuctionMessageBean implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
-        try {
-            Auction auction = (Auction) ((ObjectMessage)message).getObject();
-
-            System.out.println(auction.getTitle()+" "+" Created");
-            // Process auction creation notification
-        } catch (JMSException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            //Auction auction = (Auction) ((ObjectMessage)message).getObject();
+//
+//            //System.out.println(auction.getTitle()+" "+" Created");
+//            // Process auction creation notification
+//        } catch (JMSException e) {
+//            e.printStackTrace();
+//        }
     }
 }
