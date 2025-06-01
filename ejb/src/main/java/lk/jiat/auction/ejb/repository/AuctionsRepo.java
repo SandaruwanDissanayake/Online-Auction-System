@@ -21,7 +21,7 @@ public class AuctionsRepo {
                 "Brand new Rolex Daytona with original packaging",
                 new BigDecimal("12500.00"),
                 new BigDecimal("14200.00"),
-                "auction_images/auction_6690962565718361241_1748545859568.webp",
+                null,
                 new Date(System.currentTimeMillis() - 86400000), // Started 1 day ago
                 new Date(System.currentTimeMillis() + 86400000), // Ends in 1 day
                 AuctionStatus.ACTIVE,
@@ -35,7 +35,7 @@ public class AuctionsRepo {
                 "Authentic Hermès Birkin bag, Togo leather, Gold hardware",
                 new BigDecimal("8500.00"),
                 new BigDecimal("9200.00"),
-                "auction_images/auction_6690962565718361241_1748545859568.webp",
+                null,
                 new Date(System.currentTimeMillis() - 172800000), // Started 2 days ago
                 new Date(System.currentTimeMillis() + 259200000), // Ends in 3 days
                 AuctionStatus.ACTIVE,
@@ -49,7 +49,7 @@ public class AuctionsRepo {
                 "Vintage Patek Philippe in mint condition",
                 new BigDecimal("22000.00"),
                 new BigDecimal("24500.00"),
-                "auction_images/auction_6690962565718361241_1748545859568.webp",
+                null,
                 new Date(System.currentTimeMillis() - 432000000), // Started 5 days ago
                 new Date(System.currentTimeMillis() + 86400000), // Ends in 1 day
                 AuctionStatus.ACTIVE,
@@ -71,5 +71,46 @@ public class AuctionsRepo {
 
     public List<Auction> findAll() {
         return new ArrayList<>(AUCTION_MAP.values());
+    }
+    public Auction updateAuctionCurrentBid(Long auctionId, BigDecimal currentBid, String lastBidderEmail) {
+        if (auctionId == null || currentBid == null) {
+            return null; // or throw IllegalArgumentException
+        }
+
+        Optional<Auction> optionalAuction = findById(auctionId);
+        if (optionalAuction.isPresent()) {
+            Auction auction = optionalAuction.get();
+
+            // Create a new Auction with updated currentBid and lastBidderEmail
+            Auction updatedAuction = new Auction(
+                    auction.getId(),
+                    auction.getTitle(),
+                    auction.getDescription(),
+                    auction.getStartingPrice(),
+                    currentBid,
+                    auction.getImagePath(),
+                    auction.getStartTime(),
+                    auction.getEndTime(),
+                    auction.getStatus(),
+                    lastBidderEmail
+            );
+
+            AUCTION_MAP.put(auctionId, updatedAuction);
+            System.out.println("Update successful...................................");
+            return updatedAuction; // Return the updated auction
+        }
+
+
+        return null; // Auction not found
+    }
+    public List<Auction> getAuctionsByWithoutEmail(String email) {
+        List<Auction> result = new ArrayList<>();
+        for (Auction auction : AUCTION_MAP.values()) {
+            String lastBidder = auction.getLastBidderEmail();
+            if (email == null || lastBidder == null || !lastBidder.equals(email)) {
+                result.add(auction);
+            }
+        }
+        return result;
     }
 }

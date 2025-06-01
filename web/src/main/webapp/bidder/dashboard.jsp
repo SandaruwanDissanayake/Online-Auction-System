@@ -31,6 +31,30 @@
             }
         }
     </script>
+
+    <script>
+        const ws = new WebSocket("ws://localhost:8080/updateCurrentBid");
+
+        ws.onopen = () => {
+            console.log("WebSocket connection established.");
+        };
+
+        ws.onmessage = (event) => {
+            // Send the message to the parent window
+            //window.parent.postMessage(event.data, "*");
+            const data=JSON.parse(event.data);
+            console.log(data.currentBid);
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket closed.");
+        };
+
+        ws.onerror = (err) => {
+            console.error("WebSocket error", err);
+        };
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .gradient-bg {
@@ -52,6 +76,63 @@
         .status-badge {
             background: rgba(255, 203, 116, 0.15);
             border: 1px solid rgba(255, 203, 116, 0.3);
+        }
+
+        /* Bid update animation */
+        .bid-updated {
+            animation: bidPulse 0.5s ease;
+            color: #FFCB74;
+        }
+
+        @keyframes bidPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Connection status indicator */
+        #connection-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        #connection-status.connected {
+            background-color: #4CAF50;
+        }
+
+        #connection-status.disconnected {
+            background-color: #F44336;
+        }
+
+        /* Bid notification */
+        .bid-notification {
+            position: fixed;
+            bottom: 20px;
+            right: -300px;
+            background: #FFCB74;
+            color: #111111;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: right 0.3s ease-out;
+        }
+
+        .bid-notification.show {
+            right: 20px;
+        }
+
+        .bid-notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bid-notification i {
+            font-size: 1.2em;
         }
     </style>
 </head>
@@ -160,40 +241,45 @@
             </a>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bid-card bg-secondary rounded-xl overflow-hidden relative ">
-            <div class="relative pb-[70%]">
-                <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"
-                     class="absolute h-full w-full object-cover">
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                    <div class="flex justify-between items-center text-sm mb-2">
-                        <span class="font-medium text-light">Ends in 3d 4h</span>
-                        <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">OUTBID</span>
+
+            <c:forEach items="${bids}" var="bids">
+                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative ">
+                    <div class="relative pb-[70%]">
+                        <img src="${bids.getAuction().getImagePath()}"
+                             class="absolute h-full w-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+                            <div class="flex justify-between items-center text-sm mb-2">
+                                <span class="font-medium text-light">Ends in ${bids.getAuction().getEndTime()}</span>
+                                <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">${bids.getStatus()}</span>
+                            </div>
+                            <div class="w-full bg-light/20 rounded-full h-1.5">
+                                <div class="progress-bar rounded-full" style="width: 45%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="w-full bg-light/20 rounded-full h-1.5">
-                        <div class="progress-bar rounded-full" style="width: 45%"></div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-2">${bids.getAuction().getTitle()}</h3>
+                        <p class="text-light/70 text-sm mb-4">${bids.getAuction().getDescription()}</p>
+
+                        <div class="space-y-3 mb-5">
+                            <div class="flex justify-between">
+                                <span class="text-light/60">Your bid</span>
+                                <span class="font-bold text-red-400">$ ${bids.getAmount()}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-light/60">Highest bid</span>
+                                <span class="font-bold">$ ${bids.getAuction().getCurrentBid()}</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">
+                            <i class="fas fa-gavel mr-2"></i>Place New Bid
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="p-6">
-                <h3 class="text-xl font-bold mb-2">Hermès Birkin 25</h3>
-                <p class="text-light/70 text-sm mb-4">Togo Leather • Gold Hardware</p>
+            </c:forEach>
 
-                <div class="space-y-3 mb-5">
-                    <div class="flex justify-between">
-                        <span class="text-light/60">Your bid</span>
-                        <span class="font-bold text-red-400">$12,000</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-light/60">Highest bid</span>
-                        <span class="font-bold">$14,250</span>
-                    </div>
-                </div>
 
-                <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">
-                    <i class="fas fa-gavel mr-2"></i>Place New Bid
-                </button>
-            </div>
-        </div>
         </div>
     </section>
 
@@ -214,8 +300,32 @@
             <c:forEach items="${auctions}" var="auctions">
                 <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
                     <div class="relative pb-[70%]">
-                        <img src="${pageContext.request.contextPath}/${auctions.imagePath}"
-                             class="absolute h-full w-full object-cover">
+<%--                        <img src="${pageContext.request.contextPath}/${auctions.getImagePath() ='${auctions.}':'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80'}" />--%>
+<%--                        <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
+<%--                             class="absolute h-full w-full object-cover">--%>
+
+<%--                        <c:if test="${not empty auctions.getImagePath()}">--%>
+<%--                            <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
+<%--                                 class="absolute h-full w-full object-cover">--%>
+<%--                        </c:if>--%>
+
+<%--    <c:choose>--%>
+<%--        <c:when test="${not null || not empty auctions.getImagePath()}">--%>
+<%--            <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
+<%--                 class="absolute h-full w-full object-cover">--%>
+<%--        </c:when>--%>
+<%--        <c:otherwise>--%>
+<%--            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80"--%>
+<%--                 class="absolute h-full w-full object-cover">--%>
+<%--        </c:otherwise>--%>
+<%--    </c:choose>--%>
+
+    <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}" alt="${auctions.getTitle()}"
+         class="absolute h-full w-full object-cover">
+
+
+
+
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
                             <div class="flex justify-between items-center text-sm mb-2">
                                 <span class="font-medium text-light">Ends in : ${auctions.getEndTime()}</span>
@@ -241,125 +351,133 @@
                             </div>
                         </div>
 
-                        <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"
-                           class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">
-                            <i class="fas fa-gavel mr-2"></i>Place Bid
-                        </a>
+<%--                        <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"--%>
+<%--                           class="w-full bg-accent hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">--%>
+<%--                            <i class="fas fa-gavel mr-2"></i>Place Bid--%>
+<%--                        </a>--%>
+
+                            <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">
+                                <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"
+                                   class="block w-full h-full">
+                                    <i class="fas fa-gavel mr-2"></i>Place Bid
+                                </a>
+                            </button>
+
                     </div>
                 </div>
 
             </c:forEach>
 
             <!-- Winning Bid Card -->
-            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
-                <div class="relative pb-[70%]">
-                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80"
-                         class="absolute h-full w-full object-cover">
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                        <div class="flex justify-between items-center text-sm mb-2">
-                            <span class="font-medium text-light">Ends in 1h 22m</span>
-                            <span class="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs">WINNING</span>
-                        </div>
-                        <div class="w-full bg-light/20 rounded-full h-1.5">
-                            <div class="progress-bar rounded-full" style="width: 92%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">Rolex Daytona</h3>
-                    <p class="text-light/70 text-sm mb-4">2023 Model • Unworn</p>
+<%--            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">--%>
+<%--                <div class="relative pb-[70%]">--%>
+<%--                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80"--%>
+<%--                         class="absolute h-full w-full object-cover">--%>
+<%--                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">--%>
+<%--                        <div class="flex justify-between items-center text-sm mb-2">--%>
+<%--                            <span class="font-medium text-light">Ends in 1h 22m</span>--%>
+<%--                            <span class="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs">WINNING</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="w-full bg-light/20 rounded-full h-1.5">--%>
+<%--                            <div class="progress-bar rounded-full" style="width: 92%"></div>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
+<%--                <div class="p-6">--%>
+<%--                    <h3 class="text-xl font-bold mb-2">Rolex Daytona</h3>--%>
+<%--                    <p class="text-light/70 text-sm mb-4">2023 Model • Unworn</p>--%>
 
-                    <div class="space-y-3 mb-5">
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Your bid</span>
-                            <span class="font-bold text-accent">$18,750</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Highest bid</span>
-                            <span class="font-bold">$18,750</span>
-                        </div>
-                    </div>
+<%--                    <div class="space-y-3 mb-5">--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Your bid</span>--%>
+<%--                            <span class="font-bold text-accent">$18,750</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Highest bid</span>--%>
+<%--                            <span class="font-bold">$18,750</span>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
 
-                    <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">
-                        <i class="fas fa-plus-circle mr-2"></i>Increase Bid
-                    </button>
-                </div>
-            </div>
+<%--                    <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">--%>
+<%--                        <i class="fas fa-plus-circle mr-2"></i>Increase Bid--%>
+<%--                    </button>--%>
+<%--                </div>--%>
+<%--            </div>--%>
 
-            <!-- Outbid Card -->
-            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
-                <div class="relative pb-[70%]">
-                    <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"
-                         class="absolute h-full w-full object-cover">
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                        <div class="flex justify-between items-center text-sm mb-2">
-                            <span class="font-medium text-light">Ends in 3d 4h</span>
-                            <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">OUTBID</span>
-                        </div>
-                        <div class="w-full bg-light/20 rounded-full h-1.5">
-                            <div class="progress-bar rounded-full" style="width: 45%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">Hermès Birkin 25</h3>
-                    <p class="text-light/70 text-sm mb-4">Togo Leather • Gold Hardware</p>
+<%--            <!-- Outbid Card -->--%>
+<%--            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">--%>
+<%--                <div class="relative pb-[70%]">--%>
+<%--                    <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1064&q=80"--%>
+<%--                         class="absolute h-full w-full object-cover">--%>
+<%--                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">--%>
+<%--                        <div class="flex justify-between items-center text-sm mb-2">--%>
+<%--                            <span class="font-medium text-light">Ends in 3d 4h</span>--%>
+<%--                            <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">OUTBID</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="w-full bg-light/20 rounded-full h-1.5">--%>
+<%--                            <div class="progress-bar rounded-full" style="width: 45%"></div>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
+<%--                <div class="p-6">--%>
+<%--                    <h3 class="text-xl font-bold mb-2">Hermès Birkin 25</h3>--%>
+<%--                    <p class="text-light/70 text-sm mb-4">Togo Leather • Gold Hardware</p>--%>
 
-                    <div class="space-y-3 mb-5">
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Your bid</span>
-                            <span class="font-bold text-red-400">$12,000</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Highest bid</span>
-                            <span class="font-bold">$14,250</span>
-                        </div>
-                    </div>
+<%--                    <div class="space-y-3 mb-5">--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Your bid</span>--%>
+<%--                            <span class="font-bold text-red-400">$12,000</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Highest bid</span>--%>
+<%--                            <span class="font-bold">$14,250</span>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
 
-                    <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">
-                        <i class="fas fa-gavel mr-2"></i>Place New Bid
-                    </button>
-                </div>
-            </div>
+<%--                    <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">--%>
+<%--                        <i class="fas fa-gavel mr-2"></i>Place New Bid--%>
+<%--                    </button>--%>
+<%--                </div>--%>
+<%--            </div>--%>
 
-            <!-- Watching Card -->
-            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
-                <div class="relative pb-[70%]">
-                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80"
-                         class="absolute h-full w-full object-cover">
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                        <div class="flex justify-between items-center text-sm mb-2">
-                            <span class="font-medium text-light">Ends in 2d 8h</span>
-                            <span class="bg-blue-400/20 text-blue-400 px-2 py-1 rounded-full text-xs">WATCHING</span>
-                        </div>
-                        <div class="w-full bg-light/20 rounded-full h-1.5">
-                            <div class="progress-bar rounded-full" style="width: 35%"></div>
-                        </div>
-                    </div>
-                    <button class="absolute top-3 right-3 text-red-400 hover:text-red-300">
-                        <i class="fas fa-heart text-xl"></i>
-                    </button>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold mb-2">Patek Philippe</h3>
-                    <p class="text-light/70 text-sm mb-4">Vintage 1965 • Mint Condition</p>
+<%--            <!-- Watching Card -->--%>
+<%--            <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">--%>
+<%--                <div class="relative pb-[70%]">--%>
+<%--                    <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80"--%>
+<%--                         class="absolute h-full w-full object-cover">--%>
+<%--                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">--%>
+<%--                        <div class="flex justify-between items-center text-sm mb-2">--%>
+<%--                            <span class="font-medium text-light">Ends in 2d 8h</span>--%>
+<%--                            <span class="bg-blue-400/20 text-blue-400 px-2 py-1 rounded-full text-xs">WATCHING</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="w-full bg-light/20 rounded-full h-1.5">--%>
+<%--                            <div class="progress-bar rounded-full" style="width: 35%"></div>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
+<%--                    <button class="absolute top-3 right-3 text-red-400 hover:text-red-300">--%>
+<%--                        <i class="fas fa-heart text-xl"></i>--%>
+<%--                    </button>--%>
+<%--                </div>--%>
+<%--                <div class="p-6">--%>
+<%--                    <h3 class="text-xl font-bold mb-2">Patek Philippe</h3>--%>
+<%--                    <p class="text-light/70 text-sm mb-4">Vintage 1965 • Mint Condition</p>--%>
 
-                    <div class="space-y-3 mb-5">
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Current bid</span>
-                            <span class="font-bold">$32,500</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-light/60">Reserve</span>
-                            <span class="font-bold text-green-400">Met</span>
-                        </div>
-                    </div>
+<%--                    <div class="space-y-3 mb-5">--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Current bid</span>--%>
+<%--                            <span class="font-bold">$32,500</span>--%>
+<%--                        </div>--%>
+<%--                        <div class="flex justify-between">--%>
+<%--                            <span class="text-light/60">Reserve</span>--%>
+<%--                            <span class="font-bold text-green-400">Met</span>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
 
-                    <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">
-                        <i class="fas fa-hand-paper mr-2"></i>Place Bid
-                    </button>
-                </div>
-            </div>
+<%--                    <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium">--%>
+<%--                        <i class="fas fa-hand-paper mr-2"></i>Place Bid--%>
+<%--                    </button>--%>
+<%--                </div>--%>
+<%--            </div>--%>
         </div>
 
 
@@ -509,6 +627,14 @@
             }, { once: true });
         });
     });
+
+
+
+
+
+
 </script>
+
+
 </body>
 </html>

@@ -9,6 +9,7 @@ import lk.jiat.auction.core.model.auction.Auction;
 import lk.jiat.auction.ejb.remote.auctions.AuctionServices;
 import lk.jiat.auction.ejb.repository.AuctionsRepo;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -63,5 +64,17 @@ public class AuctionServiceSessionBean implements AuctionServices {
     public List<Auction> getAuctions() {
 
         return new ArrayList<Auction>(auctionsRepo.findAll());
+    }
+
+    @Override
+    public Auction updateAuction(Long auctionId, BigDecimal amount,String email) {
+       return auctionsRepo.updateAuctionCurrentBid(auctionId, amount, email);
+
+    }
+
+    @Override
+    public List<Auction> getAuctionsByWithoutEmail(String email) {
+
+        return auctionsRepo.getAuctionsByWithoutEmail(email);
     }
 }

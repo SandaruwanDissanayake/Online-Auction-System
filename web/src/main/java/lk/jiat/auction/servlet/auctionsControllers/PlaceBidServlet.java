@@ -59,7 +59,7 @@ public class PlaceBidServlet extends HttpServlet {
             System.out.println(auctionId);
             System.out.println(maxBid);
             System.out.println(bidderEmail);
-            response.sendRedirect(request.getContextPath()+"/loadBidScreen?id="+auctionId);
+            response.sendRedirect(request.getContextPath()+"/loadBidderDashboard");
 
             //BidResult result = bidService.placeBid(auctionId, bidderId, amount, maxBid);
 

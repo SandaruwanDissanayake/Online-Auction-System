@@ -15,6 +15,7 @@ import lk.jiat.auction.ejb.remote.bids.BidsServices;
 import lk.jiat.auction.ejb.repository.BidsRepo;
 import lk.jiat.auction.ejb.repository.UsersRepo;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,24 +40,30 @@ public class BidsServiceSessionBean implements BidsServices {
         User user= userService.getUser(bidDTO.getBidderEmail());
         System.out.println(user.getEmail()+" "+user.getRole()+" "+bidDTO.getAmount()+" User Details Found...........");
         Auction auction= auctionServices.getAuction(bidDTO.getAuctionId());
-        auction.setLastBidderEmail(user.getEmail());
 
-        Long bidId = Math.abs(UUID.randomUUID().getMostSignificantBits());
-        Bids bids=new Bids();
-        bids.setBidId(bidId);
-        bids.setMaxBid(bidDTO.getAmount());
-        bids.setAmount(bidDTO.getAmount());
-        bids.setBidder(user);
-        bids.setStatus(BidStatus.PENDING);
-        bids.setAuction(auction);
+        Auction upadatedAuction= auctionServices.updateAuction(auction.getId(),bidDTO.getAmount(),user.getEmail());
 
-        boolean isSave= bidsRepo.save(bids);
-        if(isSave){
-            System.out.println("Save Success");
-            return true;
-        }else {
-            return false;
+        boolean isSave=false;
+
+        System.out.println("Bids Service trigger 1");
+        if(upadatedAuction!=null){
+            Long bidId = Math.abs(UUID.randomUUID().getMostSignificantBits());
+            Bids bids=new Bids();
+            bids.setBidId(bidId);
+            bids.setMaxBid(bidDTO.getAmount());
+            bids.setAmount(bidDTO.getAmount());
+            bids.setBidder(user);
+            bids.setStatus(BidStatus.PENDING);
+            bids.setAuction(upadatedAuction);
+
+            System.out.println("Bids Service trigger 2");
+
+           isSave= bidsRepo.save(bids);
         }
+        System.out.println("Bids Service trigger 3 : "+isSave);
+
+        return isSave;
+
     }
 
     @Override

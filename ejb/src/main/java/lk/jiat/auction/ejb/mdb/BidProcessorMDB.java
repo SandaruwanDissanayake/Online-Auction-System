@@ -3,14 +3,19 @@ package lk.jiat.auction.ejb.mdb;
 import jakarta.ejb.ActivationConfigProperty;
 import jakarta.ejb.EJB;
 import jakarta.ejb.MessageDriven;
+import jakarta.inject.Inject;
 import jakarta.jms.Message;
 import jakarta.jms.MessageListener;
 import jakarta.jms.ObjectMessage;
 import lk.jiat.auction.core.dto.BidDTO;
+import lk.jiat.auction.core.model.auction.Auction;
 import lk.jiat.auction.core.model.bids.Bids;
-import lk.jiat.auction.ejb.bean.bids.BidsServiceSessionBean;
+
+import lk.jiat.auction.core.notificationSocket.BrodcastUtil;
+import lk.jiat.auction.ejb.remote.auctions.AuctionServices;
 import lk.jiat.auction.ejb.remote.bids.BidsServices;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -23,6 +28,10 @@ public class BidProcessorMDB implements MessageListener {
     @EJB
     private BidsServices bidsServices;
 
+    @EJB
+    private AuctionServices auctionServices;
+
+
     @Override
     public void onMessage(Message message) {
         try {
@@ -30,22 +39,26 @@ public class BidProcessorMDB implements MessageListener {
                 Object obj = ((ObjectMessage)message).getObject();
                 if (obj instanceof BidDTO) {
                     BidDTO bidDTO = (BidDTO) obj;
-                    System.out.println("Bid processed: " + bidDTO.getBidderEmail());
-                    System.out.println(bidDTO.getAmount());
-                    System.out.println(bidDTO.isProxyBid());
-                    System.out.println(bidDTO.getAuctionId());
                     // Process the bid
                     //bidService.processBid(bidDTO);
                     boolean isCreateBid= bidsServices.createBids(bidDTO);
                     if(isCreateBid){
+                        Auction auction=auctionServices.getAuction(bidDTO.getAuctionId());
+                        BigDecimal currentBid= auction.getCurrentBid();
                         System.out.println("Bids created");
-                    }else {
-                        System.out.println("Bids not created");
+
+                        BrodcastUtil.sendBrodcastCurrentBid(currentBid);
+
+
 
                         List<Bids> bids= bidsServices.getAllBids();
                         for (Bids bid : bids) {
                             System.out.println(bid.getBidId() + " " + bid.getStatus() + " " + bid.getBidder().getEmail() + "..................... Bids Data");
                         }
+                    }else {
+                        System.out.println("Bids not created");
+
+
                     }
 
                 } else {

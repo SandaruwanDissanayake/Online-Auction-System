@@ -38,6 +38,17 @@ public class UsersRepo {
                 true
 
         ));
+        USER_MAP.put("bidder1@email.com",new User(
+                "3",
+                "bidder",
+                "abc123",
+                "bidder1@email.com",
+                "0765656745",
+                "narammala",
+                "BIDDER",
+                true
+
+        ));
     }
 
     public void save(User user) {

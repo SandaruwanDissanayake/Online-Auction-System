@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 
 public class BidDTO implements Serializable {
     private Long auctionId;
-    private BigDecimal amount;
+    private BigDecimal amount=BigDecimal.ZERO.setScale(2);
     private BigDecimal maxBid;
     private String bidderEmail;
     private boolean isProxyBid;

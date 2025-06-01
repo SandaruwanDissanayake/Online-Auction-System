@@ -116,11 +116,11 @@ public class BidsRepo {
 
         System.out.println(".......................................................................................");
 
-        System.out.println(bid.getAuction().getTitle());
-        System.out.println(bid.getBidder().getEmail());
-        System.out.println(bid.getAmount());
+//        System.out.println(bid.getAuction().getTitle());
+        //System.out.println(bid.getBidder().getEmail());
+       // System.out.println(bid.getAmount());
 
-        System.out.println(".......................................................................................");
+       // System.out.println(".......................................................................................");
 
         return true;
     }
