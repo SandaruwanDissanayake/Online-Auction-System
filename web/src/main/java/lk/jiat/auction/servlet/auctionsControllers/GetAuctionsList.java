@@ -14,7 +14,10 @@ import lk.jiat.auction.ejb.remote.auctions.AuctionServices;
 import lk.jiat.auction.ejb.remote.bids.BidsServices;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @WebServlet("/loadBidderDashboard")
 public class GetAuctionsList extends HttpServlet {
@@ -27,27 +30,47 @@ public class GetAuctionsList extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(false);
-        String email= session.getAttribute("email").toString();
+        String email = session.getAttribute("email").toString();
+
+        // Get all auctions except those created by this user
         List<Auction> auctions = auctionServices.getAuctionsByWithoutEmail(email);
-        for (Auction auction : auctions) {
-            if (auction.getImagePath() == null || auction.getImagePath().isEmpty()) {
-                auction.setImagePath(DEFAULT_IMAGE);
+
+        // Get all bids by this user
+        List<Bids> bids = bidsServices.getBidsByUserId(email);
+
+
+        // Collect auction IDs from bids to exclude from auctions list
+        Set<Long> bidAuctionIds = new HashSet<>();
+        for (Bids bid : bids) {
+            Auction bidAuction = bid.getAuction();
+            System.out.println("...............................MAX BID...................................."+bid.getMaxBid());
+
+            if (bidAuction != null) {
+                bidAuctionIds.add(bidAuction.getId());
+
+                // Set default image if needed
+                if (bidAuction.getImagePath() == null || bidAuction.getImagePath().isEmpty()) {
+                    bidAuction.setImagePath(DEFAULT_IMAGE);
+                }
             }
         }
 
-        List<Bids> bids=bidsServices.getBidsByUserId(email);
+        // Filter auctions to exclude those already in bids
+        List<Auction> filteredAuctions = new ArrayList<>();
+        for (Auction auction : auctions) {
+            // Set default image if needed
+            if (auction.getImagePath() == null || auction.getImagePath().isEmpty()) {
+                auction.setImagePath(DEFAULT_IMAGE);
+            }
 
-        // Line ~37 in GetAuctionsList.java
-
-        for (Bids bid : bids) {
-            Auction bidAuction = bid.getAuction();
-            if (bidAuction != null && (bidAuction.getImagePath() == null || bidAuction.getImagePath().isEmpty())) {
-                bidAuction.setImagePath(DEFAULT_IMAGE);
+            // Only include if not in bidAuctionIds
+            if (!bidAuctionIds.contains(auction.getId())) {
+                filteredAuctions.add(auction);
             }
         }
 
         req.setAttribute("bids", bids);
-        req.setAttribute("auctions", auctions);
+        req.setAttribute("auctions", filteredAuctions);  // Use the filtered list
         req.getRequestDispatcher("bidder/dashboard.jsp").forward(req, resp);
     }
 }

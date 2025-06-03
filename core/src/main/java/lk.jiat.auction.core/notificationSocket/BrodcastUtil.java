@@ -9,9 +9,9 @@ public class BrodcastUtil {
        webSoketBrodcaster1 = webSoketBrodcaster;
     }
 
-    public static void sendBrodcastCurrentBid(BigDecimal currentBid) {
+    public static void sendBrodcastCurrentBid(BigDecimal currentBid,Long auctionId) {
         if(webSoketBrodcaster1 != null) {
-            webSoketBrodcaster1.sendBidResults(currentBid);
+            webSoketBrodcaster1.sendBidResults(currentBid,auctionId);
         }
     }
 }

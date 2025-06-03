@@ -40,29 +40,36 @@ public class BidsServiceSessionBean implements BidsServices {
         User user= userService.getUser(bidDTO.getBidderEmail());
         System.out.println(user.getEmail()+" "+user.getRole()+" "+bidDTO.getAmount()+" User Details Found...........");
         Auction auction= auctionServices.getAuction(bidDTO.getAuctionId());
-
-        Auction upadatedAuction= auctionServices.updateAuction(auction.getId(),bidDTO.getAmount(),user.getEmail());
-
-        boolean isSave=false;
-
-        System.out.println("Bids Service trigger 1");
-        if(upadatedAuction!=null){
-            Long bidId = Math.abs(UUID.randomUUID().getMostSignificantBits());
-            Bids bids=new Bids();
-            bids.setBidId(bidId);
-            bids.setMaxBid(bidDTO.getAmount());
-            bids.setAmount(bidDTO.getAmount());
-            bids.setBidder(user);
-            bids.setStatus(BidStatus.PENDING);
-            bids.setAuction(upadatedAuction);
-
-            System.out.println("Bids Service trigger 2");
-
-           isSave= bidsRepo.save(bids);
+        boolean isUpdateBidStatus=false;
+        if(auction.getLastBidderEmail()!=null){
+           isUpdateBidStatus= updateBidsStatusByUserEmail(auction.getLastBidderEmail(),BidStatus.OUTBID);
+        }else {
+            
+            isUpdateBidStatus=true;
         }
-        System.out.println("Bids Service trigger 3 : "+isSave);
+        if(isUpdateBidStatus){
+            Auction upadatedAuction= auctionServices.updateAuction(auction.getId(),bidDTO.getAmount(),user.getEmail());
+            boolean isSave=false;
+            System.out.println("Bids Service trigger 1");
+            if(upadatedAuction!=null){
+                Long bidId = Math.abs(UUID.randomUUID().getMostSignificantBits());
+                Bids bids=new Bids();
+                bids.setBidId(bidId);
+                bids.setMaxBid(bidDTO.getAmount());
+                bids.setAmount(bidDTO.getAmount());
+                bids.setBidder(user);
+                bids.setStatus(BidStatus.PENDING);
+                bids.setAuction(upadatedAuction);
 
-        return isSave;
+                System.out.println("Bids Service trigger 2");
+
+                isSave= bidsRepo.save(bids);
+            }
+            System.out.println("Bids Service trigger 3 : "+isSave);
+        }
+
+        return true;
+
 
     }
 
@@ -86,8 +93,25 @@ public class BidsServiceSessionBean implements BidsServices {
         return false;
     }
 
+
+
     @Override
     public List<Bids> getBidsByUserId(String email) {
-        return bidsRepo.findByBidderEmail(email);
+        // Fetch bids with auctions in a single query (assuming JPA relationship)
+        List<Bids> bids = bidsRepo.findByBidderEmail(email);
+        // Update maxBid directly from the already-loaded auction
+        for (Bids bid : bids) {
+           Auction auction= auctionServices.getAuction(bid.getAuction().getId());
+            if (auction != null) {
+                bid.setMaxBid(auction.getCurrentBid());
+            }
+        }
+        return bids;
+    }
+
+    @Override
+    public boolean updateBidsStatusByUserEmail(String email, BidStatus status) {
+        bidsRepo.updateBidsStatusByUserEmail(email,status);
+        return true;
     }
 }

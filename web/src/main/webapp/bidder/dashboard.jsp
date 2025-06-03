@@ -40,18 +40,69 @@
         };
 
         ws.onmessage = (event) => {
-            // Send the message to the parent window
-            //window.parent.postMessage(event.data, "*");
-            const data=JSON.parse(event.data);
-            console.log(data.currentBid);
+            const data = JSON.parse(event.data);
+            console.log("Current Bid Amount: " + data.currentBid);
+            console.log("Auction ID: " + data.auctionId);
+
+            // Find all auction cards (both bids and auctions)
+            const auctionCards = document.querySelectorAll('.bid-card');
+
+            auctionCards.forEach(card => {
+                const cardAuctionId = card.getAttribute('data-auction-id');
+
+                if (cardAuctionId && cardAuctionId == data.auctionId) {
+                    // ===== 1. UPDATE CURRENT BID (in available auctions) =====
+                    // Targets: <span class="font-bold">$XXX.00</span> in auctions section
+                    const currentBidElement = card.querySelector('.currentBidamount');
+                    if (currentBidElement) {
+                        currentBidElement.textContent = `$`+data.currentBid+`.00`;
+
+                        // Visual feedback
+                        currentBidElement.classList.add('animate-pulse', 'text-green-500');
+                        setTimeout(() => {
+                            currentBidElement.classList.remove('animate-pulse', 'text-green-500');
+                        }, 1000);
+                    }
+
+                    // ===== 2. UPDATE HIGHEST BID (in your bids) =====
+                    // Targets: <span class="font-bold">$XXX.00</span> in bids section (not the red "Your bid")
+                    // const highestBidElement = card.querySelector('.flex.justify-between span.text-light/60 + span.font-bold:not(.text-red-400)');
+
+                     const highestBidElement = card.querySelector('.maxBidAmount');
+                    if (highestBidElement) {
+                        highestBidElement.textContent = `$`+data.currentBid+`.00`;
+
+                        // Visual feedback
+                        highestBidElement.classList.add('animate-pulse', 'text-green-500');
+                        setTimeout(() => {
+                            highestBidElement.classList.remove('animate-pulse', 'text-green-500');
+                        }, 1000);
+
+                        const yourBidAmount=card.querySelector('.yourBidAmount');
+                        yourBidAmount.classList.add('animate-pulse', 'text-red-400');
+                        setTimeout(() => {
+                            yourBidAmount.classList.remove('animate-pulse', 'text-green-400');
+                        })
+                        const bidCardStatuselement=card.querySelector('.bidCardStatus');
+                        bidCardStatuselement.textContent="OUTBID";
+
+                        bidCardStatuselement.classList.add('animate-pulse', 'bg-red-400/20 text-red-400');
+                        setTimeout(() => {
+                            bidCardStatuselement.classList.remove('animate-pulse', 'bg-red-400/20 text-red-400');
+                        })
+                    }
+                }
+            });
         };
 
         ws.onclose = () => {
             console.log("WebSocket closed.");
+            // Optional: Add reconnection logic here
         };
 
         ws.onerror = (err) => {
             console.error("WebSocket error", err);
+            // Optional: Add error handling/reconnection here
         };
     </script>
 
@@ -243,15 +294,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <c:forEach items="${bids}" var="bids">
-                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative ">
+<%--                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative " data-auction-id="${bids.getAuction().getId()} >--%>
+                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative" data-auction-id="${bids.getAuction().getId()}">
                     <div class="relative pb-[70%]">
                         <img src="${bids.getAuction().getImagePath()}"
                              class="absolute h-full w-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
                             <div class="flex justify-between items-center text-sm mb-2">
                                 <span class="font-medium text-light">Ends in ${bids.getAuction().getEndTime()}</span>
-                                <span class="bg-red-400/20 text-red-400 px-2 py-1 rounded-full text-xs">${bids.getStatus()}</span>
-                            </div>
+                                <span class="px-2 py-1 rounded-full text-xs bidCardStatus
+  <c:choose>
+    <c:when test="${bids.status eq 'OUTBID'}">bg-orange-400/20 text-orange-400</c:when>
+    <c:when test="${bids.status eq 'WINNING'}">bg-green-400/20 text-green-400</c:when>
+    <c:when test="${bids.status eq 'LOST'}">bg-red-400/20 text-red-400</c:when>
+    <c:when test="${bids.status eq 'PENDING'}">bg-blue-400/20 text-blue-400</c:when>
+    <c:otherwise>bg-gray-400/20 text-gray-400</c:otherwise>
+  </c:choose>
+">
+                                        ${bids.status}
+                                </span> </div>
                             <div class="w-full bg-light/20 rounded-full h-1.5">
                                 <div class="progress-bar rounded-full" style="width: 45%"></div>
                             </div>
@@ -261,14 +322,19 @@
                         <h3 class="text-xl font-bold mb-2">${bids.getAuction().getTitle()}</h3>
                         <p class="text-light/70 text-sm mb-4">${bids.getAuction().getDescription()}</p>
 
-                        <div class="space-y-3 mb-5">
+                        <div class="space-y-3 mb-5" >
                             <div class="flex justify-between">
                                 <span class="text-light/60">Your bid</span>
-                                <span class="font-bold text-red-400">$ ${bids.getAmount()}</span>
+                                <span  class="font-bold yourBidAmount
+    <c:choose>
+        <c:when test="${bids.getAmount() eq bids.getMaxBid()}">text-green-400</c:when>
+        <c:otherwise>text-red-400</c:otherwise>
+    </c:choose>
+">$${bids.getAmount()}</span>
                             </div>
-                            <div class="flex justify-between">
+                            <div class="flex justify-between ">
                                 <span class="text-light/60">Highest bid</span>
-                                <span class="font-bold">$ ${bids.getAuction().getCurrentBid()}</span>
+                                <span class="font-bold maxBidAmount">$${bids.getMaxBid()}</span>
                             </div>
                         </div>
 
@@ -298,38 +364,23 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <c:forEach items="${auctions}" var="auctions">
-                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative">
+                <div class="bid-card bg-secondary rounded-xl overflow-hidden relative" data-auction-id="${auctions.getId()}">
                     <div class="relative pb-[70%]">
-<%--                        <img src="${pageContext.request.contextPath}/${auctions.getImagePath() ='${auctions.}':'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80'}" />--%>
-<%--                        <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
-<%--                             class="absolute h-full w-full object-cover">--%>
-
-<%--                        <c:if test="${not empty auctions.getImagePath()}">--%>
-<%--                            <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
-<%--                                 class="absolute h-full w-full object-cover">--%>
-<%--                        </c:if>--%>
-
-<%--    <c:choose>--%>
-<%--        <c:when test="${not null || not empty auctions.getImagePath()}">--%>
-<%--            <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}"--%>
-<%--                 class="absolute h-full w-full object-cover">--%>
-<%--        </c:when>--%>
-<%--        <c:otherwise>--%>
-<%--            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1999&q=80"--%>
-<%--                 class="absolute h-full w-full object-cover">--%>
-<%--        </c:otherwise>--%>
-<%--    </c:choose>--%>
-
-    <img src="${pageContext.request.contextPath}/${auctions.getImagePath()}" alt="${auctions.getTitle()}"
-         class="absolute h-full w-full object-cover">
-
-
-
-
+                         <img src="${auctions.getImagePath()}" alt="${auctions.getTitle()}"
+                                class="absolute h-full w-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
                             <div class="flex justify-between items-center text-sm mb-2">
                                 <span class="font-medium text-light">Ends in : ${auctions.getEndTime()}</span>
-                                <span class="bg-green-400/20 text-green-400 px-2 py-1 rounded-full text-xs">${auctions.getStatus()}</span>
+                                <span class="px-2 py-1 rounded-full text-xs
+  <c:choose>
+    <c:when test="${auctions.status eq 'PENDING'}">bg-orange-400/20 text-orange-400</c:when>
+    <c:when test="${auctions.status eq 'ACTIVE'}">bg-green-400/20 text-green-400</c:when>
+    <c:when test="${auctions.status eq 'CLOSED'}">bg-red-400/20 text-red-400</c:when>
+    <c:otherwise>bg-gray-400/20 text-gray-400</c:otherwise>
+  </c:choose>
+">
+                                        ${auctions.status}
+                                </span>
                             </div>
                             <div class="w-full bg-light/20 rounded-full h-1.5">
                                 <div class="progress-bar rounded-full" style="width: 92%"></div>
@@ -343,26 +394,19 @@
                         <div class="space-y-3 mb-5">
                             <div class="flex justify-between">
                                 <span class="text-light/60">Current bid</span>
-                                <span class="font-bold">$${auctions.getCurrentBid()}</span>
+                                <span class="font-bold currentBidamount">$${auctions.getCurrentBid()}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-light/60">Reserve</span>
                                 <span class="font-bold text-green-400">Met</span>
                             </div>
                         </div>
-
-<%--                        <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"--%>
-<%--                           class="w-full bg-accent hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">--%>
-<%--                            <i class="fas fa-gavel mr-2"></i>Place Bid--%>
-<%--                        </a>--%>
-
                             <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">
                                 <a href="${pageContext.request.contextPath}/loadBidScreen?id=${auctions.getId()}"
                                    class="block w-full h-full">
                                     <i class="fas fa-gavel mr-2"></i>Place Bid
                                 </a>
                             </button>
-
                     </div>
                 </div>
 

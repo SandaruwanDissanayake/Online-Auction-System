@@ -2,6 +2,7 @@ package lk.jiat.auction.ejb.remote.bids;
 
 import jakarta.ejb.Remote;
 import lk.jiat.auction.core.dto.BidDTO;
+import lk.jiat.auction.core.model.bids.BidStatus;
 import lk.jiat.auction.core.model.bids.Bids;
 
 import java.util.List;
@@ -14,4 +15,5 @@ public interface BidsServices {
     boolean updateBids(Bids bids);
     boolean deleteBids(long id);
     List<Bids> getBidsByUserId(String email);
+    boolean updateBidsStatusByUserEmail(String email, BidStatus status);
 }

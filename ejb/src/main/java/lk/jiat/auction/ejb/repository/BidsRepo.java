@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class BidsRepo {
+
     private final Map<Long, Bids> BIDS_MAP = new ConcurrentHashMap<>();
 
     @PostConstruct
@@ -142,5 +143,25 @@ public class BidsRepo {
         return BIDS_MAP.values().stream()
                 .filter(bid -> bid.getBidder().getEmail().equalsIgnoreCase(email))
                 .collect(Collectors.toList());
+    }
+    public boolean updateBidsStatusByUserEmail(String email, BidStatus status) {
+        // Find all bids by the user email
+        List<Bids> userBids = BIDS_MAP.values().stream()
+                .filter(bid -> bid.getBidder().getEmail().equalsIgnoreCase(email))
+                .collect(Collectors.toList());
+
+        // If no bids found for this user, return false
+        if (userBids.isEmpty()) {
+            System.out.println("User Is Empty");
+            return false;
+        }
+
+        // Update status for each bid
+        userBids.forEach(bid -> bid.setStatus(status));
+
+        // Update the bids in the map
+        userBids.forEach(bid -> BIDS_MAP.put(bid.getBidId(), bid));
+
+        return true;
     }
 }

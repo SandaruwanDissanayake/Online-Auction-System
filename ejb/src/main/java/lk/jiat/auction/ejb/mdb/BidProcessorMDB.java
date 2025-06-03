@@ -37,8 +37,7 @@ public class BidProcessorMDB implements MessageListener {
         try {
             if (message instanceof ObjectMessage) {
                 Object obj = ((ObjectMessage)message).getObject();
-                if (obj instanceof BidDTO) {
-                    BidDTO bidDTO = (BidDTO) obj;
+                if (obj instanceof BidDTO bidDTO) {
                     // Process the bid
                     //bidService.processBid(bidDTO);
                     boolean isCreateBid= bidsServices.createBids(bidDTO);
@@ -47,7 +46,7 @@ public class BidProcessorMDB implements MessageListener {
                         BigDecimal currentBid= auction.getCurrentBid();
                         System.out.println("Bids created");
 
-                        BrodcastUtil.sendBrodcastCurrentBid(currentBid);
+                        BrodcastUtil.sendBrodcastCurrentBid(currentBid,auction.getId());
 
 
 

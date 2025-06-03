@@ -20,8 +20,8 @@ public class WebSocket implements WebSoketBrodcaster {
     }
 
     @Override
-    public void sendBidResults(BigDecimal currentBid) {
-        String json = String.format("{\"currentBid\":%.2f}",currentBid);
+    public void sendBidResults(BigDecimal currentBid,Long auctionId) {
+        String json = String.format("{\"currentBid\":%.2f,\"auctionId\":%d}",currentBid, auctionId);
         for (Session session : sessions) {
             session.getAsyncRemote().sendText(json);
         }
@@ -37,6 +37,5 @@ public class WebSocket implements WebSoketBrodcaster {
         sessions.remove(session);
         System.out.println("onClose");
     }
-
 
 }
