@@ -96,8 +96,9 @@
                         <p class="text-light/60">Auction Status</p>
                         <span class="px-2 py-1 rounded-full text-xs
                                   ${auction.getStatus() == 'ACTIVE' ? 'bg-success/20 text-success' :
+                                    auction.getStatus() == 'OUTBID' ?  'bg-danger/20 text-danger' :
                                     auction.getStatus() == 'CLOSED' ? 'bg-danger/20 text-danger' : 'bg-warning/20 text-warning'}">
-                            ${auction.status}
+                            ${auction.getStatus()}
                         </span>
                     </div>
                 </div>

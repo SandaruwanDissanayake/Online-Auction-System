@@ -14,4 +14,5 @@ public class BrodcastUtil {
             webSoketBrodcaster1.sendBidResults(currentBid,auctionId);
         }
     }
+
 }

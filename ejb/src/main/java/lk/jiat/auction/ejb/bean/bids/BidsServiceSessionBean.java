@@ -5,6 +5,7 @@ import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import lk.jiat.auction.core.dto.BidDTO;
+import lk.jiat.auction.core.dto.UpdateBidDTO;
 import lk.jiat.auction.core.model.auction.Auction;
 import lk.jiat.auction.core.model.auth.User;
 import lk.jiat.auction.core.model.bids.BidStatus;
@@ -80,12 +81,30 @@ public class BidsServiceSessionBean implements BidsServices {
 
     @Override
     public Bids getBids(long id) {
-        return null;
+        return bidsRepo.findByBidId(id);
     }
 
     @Override
-    public boolean updateBids(Bids bids) {
-        return false;
+    public boolean updateBids(UpdateBidDTO updateBidDTO) {
+
+        if (updateBidDTO == null || updateBidDTO.getAuctionId() == null || updateBidDTO.getAmount() == null) {
+            return false;
+        }
+
+        Auction updatedAuction = auctionServices.updateAuction(
+                updateBidDTO.getAuctionId(),
+                updateBidDTO.getAmount(),
+                updateBidDTO.getBidderEmail()
+        );
+
+        if (updatedAuction == null) {
+            return false;
+        }
+        return bidsRepo.updateBidStatusAuctionAndAmount(
+                updateBidDTO.getBidId(),
+                updatedAuction,
+                updateBidDTO.getAmount()
+        );
     }
 
     @Override

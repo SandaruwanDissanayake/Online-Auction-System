@@ -164,4 +164,23 @@ public class BidsRepo {
 
         return true;
     }
+    public boolean updateBidStatusAuctionAndAmount(Long bidId, Auction auction, BigDecimal amount) {
+        // Find the bid by ID
+        Bids bid = BIDS_MAP.get(bidId);
+
+        // If bid doesn't exist, return false
+        if (bid == null) {
+            return false;
+        }
+
+        // Update the auction, amount, and status (assuming you want to set it to PENDING when updated)
+        bid.setAuction(auction);
+        bid.setAmount(amount);
+        bid.setStatus(BidStatus.PENDING); // or whatever status you want to set
+
+        // Update the bid in the map
+        BIDS_MAP.put(bidId, bid);
+
+        return true;
+    }
 }

@@ -104,6 +104,7 @@
             console.error("WebSocket error", err);
             // Optional: Add error handling/reconnection here
         };
+
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -300,8 +301,9 @@
                         <img src="${bids.getAuction().getImagePath()}"
                              class="absolute h-full w-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                            <div class="flex justify-between items-center text-sm mb-2">
-                                <span class="font-medium text-light">Ends in ${bids.getAuction().getEndTime()}</span>
+                            <div class="flex justify-start items-center text-sm mb-2">
+                                <span class="font-medium text-light">Ends in :</span>
+                                <span class="font-medium text-light endTime">${bids.getAuction().getEndTime()}</span>
                                 <span class="px-2 py-1 rounded-full text-xs bidCardStatus
   <c:choose>
     <c:when test="${bids.status eq 'OUTBID'}">bg-orange-400/20 text-orange-400</c:when>
@@ -337,9 +339,11 @@
                                 <span class="font-bold maxBidAmount">$${bids.getMaxBid()}</span>
                             </div>
                         </div>
-
-                        <button class="w-full bg-accent hover:bg-accent/90 text-primary py-2.5 px-4 rounded-lg border border-accent transition-colors font-medium">
-                            <i class="fas fa-gavel mr-2"></i>Place New Bid
+                        <button class="w-full bg-accent/10 hover:bg-accent/20 text-accent py-2.5 px-4 rounded-lg border border-accent/20 transition-colors font-medium text-center">
+                            <a href="${pageContext.request.contextPath}/loadNewBidScreen?bidId=${bids.getBidId()}"
+                               class="block w-full h-full">
+                                <i class="fas fa-gavel mr-2"></i>Place New Bid
+                            </a>
                         </button>
                     </div>
                 </div>
@@ -634,49 +638,128 @@
 
 <!-- Live updates script -->
 <script>
-    // Simulate real-time updates
-    function updateBidStatus() {
-        // In a real app, this would fetch from your backend
-        console.log("Checking for bid updates...");
+    function parseISTDate(dateString) {
+        // Remove any extra whitespace
+        const cleaned = dateString.trim();
 
-        // Example: Randomly update one of the bid cards
-        const bidCards = document.querySelectorAll('.bid-card');
-        if(bidCards.length > 0) {
-            const randomCard = bidCards[Math.floor(Math.random() * bidCards.length)];
-            const priceElement = randomCard.querySelector('.font-bold:not(.text-accent):not(.text-red-400)');
-            if(priceElement) {
-                const currentPrice = parseFloat(priceElement.textContent.replace(/\$|,/g, ''));
-                priceElement.textContent = '$' + (currentPrice + 50).toLocaleString();
+        // IST format: "Wed Jun 04 18:49:16 IST 2025"
+        // Convert IST to a format JavaScript can parse
+        const withoutIST = cleaned.replace(' IST ', ' GMT+0530 ');
+
+        let date = new Date(withoutIST);
+
+        // If that doesn't work, try manual parsing
+        if (isNaN(date.getTime())) {
+            const parts = cleaned.match(/(\w{3}) (\w{3}) (\d{2}) (\d{2}):(\d{2}):(\d{2}) IST (\d{4})/);
+            if (parts) {
+                const [, dayName, month, day, hour, minute, second, year] = parts;
+                const monthIndex = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(month);
+
+                // Create date in IST (UTC+5:30)
+                date = new Date(year, monthIndex, day, hour, minute, second);
+                // Adjust for IST timezone (subtract 5.5 hours to get UTC, then let browser handle local conversion)
+                date = new Date(date.getTime() - (5.5 * 60 * 60 * 1000));
             }
         }
+
+        return date;
     }
 
-    // Update every 30 seconds
-    //setInterval(updateBidStatus, 30000);
+    function startCountdownForElement(element) {
+        const endTimeString = element.textContent.trim();
+        console.log("Starting countdown for:", endTimeString);
 
-    // Initialize tooltips
-    document.querySelectorAll('[data-tooltip]').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'absolute z-50 bg-primary text-light text-xs px-2 py-1 rounded shadow-lg';
-            tooltip.textContent = el.getAttribute('data-tooltip');
-            document.body.appendChild(tooltip);
+        const endTime = parseISTDate(endTimeString);
 
-            const rect = el.getBoundingClientRect();
-            tooltip.style.top = `${rect.top - 30}px`;
-            tooltip.style.left = `${rect.left + rect.width/2 - tooltip.offsetWidth/2}px`;
+        if (isNaN(endTime.getTime())) {
+            console.error('Invalid date format:', endTimeString);
+            element.textContent = 'Invalid Date';
+            return;
+        }
 
-            el.addEventListener('mouseleave', () => {
-                tooltip.remove();
-            }, { once: true });
+        console.log('Parsed end time:', endTime);
+
+        function updateCountdown() {
+            const now = new Date();
+            const timeLeft = endTime - now;
+
+            if (timeLeft <= 0) {
+                element.textContent = 'Auction Ended';
+                element.style.color = '#ef4444'; // red color
+                clearInterval(timer);
+
+                // Update the bid card status if it's still showing active status
+                const bidCard = element.closest('.bid-card');
+                if (bidCard) {
+                    const statusElement = bidCard.querySelector('.bidCardStatus');
+                    if (statusElement && !statusElement.textContent.includes('LOST')) {
+                        statusElement.textContent = 'ENDED';
+                        statusElement.className = 'px-2 py-1 rounded-full text-xs bidCardStatus bg-gray-400/20 text-gray-400';
+                    }
+                }
+                return;
+            }
+
+            // Calculate time components
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            // Format the display
+            let display = '';
+            if (days > 0) {
+                display += days+`d `;
+            }
+            if (hours > 0 || days > 0) {
+                display += hours.toString().padStart(2, '0')`:`;
+            }
+            display += minutes.toString().padStart(2, '0')+`:`+seconds.toString().padStart(2, '0');
+
+            element.textContent = display;
+
+            // Change color based on urgency
+            if (timeLeft < 60000) { // Less than 1 minute
+                element.style.color = '#ef4444'; // red
+            } else if (timeLeft < 300000) { // Less than 5 minutes
+                element.style.color = '#f59e0b'; // orange
+            } else {
+                element.style.color = ''; // default color
+            }
+        }
+
+        // Initial update
+        updateCountdown();
+
+        // Set interval to update every second
+        const timer = setInterval(updateCountdown, 1000);
+
+        return timer;
+    }
+
+    // Initialize all countdowns
+    function initializeAllCountdowns() {
+        const endTimeElements = document.querySelectorAll('.endTime');
+        console.log(`Found ${endTimeElements.length} countdown elements`);
+
+        endTimeElements.forEach((element, index) => {
+            console.log(`Initializing countdown ${index + 1}:`, element.textContent.trim());
+            startCountdownForElement(element);
         });
+    }
+
+    // Start when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Small delay to ensure all content is loaded
+        setTimeout(initializeAllCountdowns, 100);
     });
 
-
-
-
-
-
+    // Also call immediately in case DOM is already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeAllCountdowns);
+    } else {
+        setTimeout(initializeAllCountdowns, 100);
+    }
 </script>
 
 
