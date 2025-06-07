@@ -27,6 +27,15 @@ public class WebSocket implements WebSoketBrodcaster {
         }
     }
 
+    @Override
+    public void sendAuctionEndTime(Long auctionId, String auctionEndTime) {
+        String json=String.format("{\"auctionId\":%d,\"auctionEndTime\":\"%s\"}", auctionId, auctionEndTime);
+        for (Session session : sessions) {
+            session.getAsyncRemote().sendText(json);
+        }
+    }
+
+
     @OnOpen
     public void onOpen(Session session) {
         sessions.add(session);

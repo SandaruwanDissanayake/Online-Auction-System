@@ -43,6 +43,7 @@
             const data = JSON.parse(event.data);
             console.log("Current Bid Amount: " + data.currentBid);
             console.log("Auction ID: " + data.auctionId);
+            console.log("Auction end Time :" + data.auctionEndTime);
 
             // Find all auction cards (both bids and auctions)
             const auctionCards = document.querySelectorAll('.bid-card');
@@ -53,44 +54,51 @@
                 if (cardAuctionId && cardAuctionId == data.auctionId) {
                     // ===== 1. UPDATE CURRENT BID (in available auctions) =====
                     // Targets: <span class="font-bold">$XXX.00</span> in auctions section
-                    const currentBidElement = card.querySelector('.currentBidamount');
-                    if (currentBidElement) {
-                        currentBidElement.textContent = `$`+data.currentBid+`.00`;
 
-                        // Visual feedback
-                        currentBidElement.classList.add('animate-pulse', 'text-green-500');
-                        setTimeout(() => {
-                            currentBidElement.classList.remove('animate-pulse', 'text-green-500');
-                        }, 1000);
+                    if(data.currentBid != undefined ){
+                        const currentBidElement = card.querySelector('.currentBidamount');
+                        if (currentBidElement) {
+                            currentBidElement.textContent = `$`+data.currentBid+`.00`;
+
+                            // Visual feedback
+                            currentBidElement.classList.add('animate-pulse', 'text-green-500');
+                            setTimeout(() => {
+                                currentBidElement.classList.remove('animate-pulse', 'text-green-500');
+                            }, 1000);
+                        }
+
+                        // ===== 2. UPDATE HIGHEST BID (in your bids) =====
+                        // Targets: <span class="font-bold">$XXX.00</span> in bids section (not the red "Your bid")
+                        // const highestBidElement = card.querySelector('.flex.justify-between span.text-light/60 + span.font-bold:not(.text-red-400)');
+
+                        const highestBidElement = card.querySelector('.maxBidAmount');
+                        if (highestBidElement) {
+                            highestBidElement.textContent = `$`+data.currentBid+`.00`;
+
+                            // Visual feedback
+                            highestBidElement.classList.add('animate-pulse', 'text-green-500');
+                            setTimeout(() => {
+                                highestBidElement.classList.remove('animate-pulse', 'text-green-500');
+                            }, 1000);
+
+                            const yourBidAmount=card.querySelector('.yourBidAmount');
+                            yourBidAmount.classList.add('animate-pulse', 'text-red-400');
+                            setTimeout(() => {
+                                yourBidAmount.classList.remove('animate-pulse', 'text-green-400');
+                            })
+                            const bidCardStatuselement=card.querySelector('.bidCardStatus');
+                            bidCardStatuselement.textContent="OUTBID";
+
+                            bidCardStatuselement.classList.add('animate-pulse', 'bg-red-400/20 text-red-400');
+                            setTimeout(() => {
+                                bidCardStatuselement.classList.remove('animate-pulse', 'bg-red-400/20 text-red-400');
+                            })
+                        }
                     }
+                    const endTime=card.querySelector('.endTime');
+                    endTime.textContent=data.auctionEndTime;
 
-                    // ===== 2. UPDATE HIGHEST BID (in your bids) =====
-                    // Targets: <span class="font-bold">$XXX.00</span> in bids section (not the red "Your bid")
-                    // const highestBidElement = card.querySelector('.flex.justify-between span.text-light/60 + span.font-bold:not(.text-red-400)');
 
-                     const highestBidElement = card.querySelector('.maxBidAmount');
-                    if (highestBidElement) {
-                        highestBidElement.textContent = `$`+data.currentBid+`.00`;
-
-                        // Visual feedback
-                        highestBidElement.classList.add('animate-pulse', 'text-green-500');
-                        setTimeout(() => {
-                            highestBidElement.classList.remove('animate-pulse', 'text-green-500');
-                        }, 1000);
-
-                        const yourBidAmount=card.querySelector('.yourBidAmount');
-                        yourBidAmount.classList.add('animate-pulse', 'text-red-400');
-                        setTimeout(() => {
-                            yourBidAmount.classList.remove('animate-pulse', 'text-green-400');
-                        })
-                        const bidCardStatuselement=card.querySelector('.bidCardStatus');
-                        bidCardStatuselement.textContent="OUTBID";
-
-                        bidCardStatuselement.classList.add('animate-pulse', 'bg-red-400/20 text-red-400');
-                        setTimeout(() => {
-                            bidCardStatuselement.classList.remove('animate-pulse', 'bg-red-400/20 text-red-400');
-                        })
-                    }
                 }
             });
         };
@@ -301,10 +309,13 @@
                         <img src="${bids.getAuction().getImagePath()}"
                              class="absolute h-full w-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-                            <div class="flex justify-start items-center text-sm mb-2">
-                                <span class="font-medium text-light">Ends in :</span>
-                                <span class="font-medium text-light endTime">${bids.getAuction().getEndTime()}</span>
-                                <span class="px-2 py-1 rounded-full text-xs bidCardStatus
+                            <div class="flex justify-between items-center text-sm mb-2">
+                                <div>
+                                    <span class="font-medium text-light">Ends in :</span>
+                                    <span class="font-medium text-light endTime"></span>
+                                </div>
+
+                                <span class="px-2 py-1 rounded-full  text-xs bidCardStatus
   <c:choose>
     <c:when test="${bids.status eq 'OUTBID'}">bg-orange-400/20 text-orange-400</c:when>
     <c:when test="${bids.status eq 'WINNING'}">bg-green-400/20 text-green-400</c:when>
@@ -374,7 +385,11 @@
                                 class="absolute h-full w-full object-cover">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
                             <div class="flex justify-between items-center text-sm mb-2">
-                                <span class="font-medium text-light">Ends in : ${auctions.getEndTime()}</span>
+                                <div>
+                                    <span class="font-medium text-light">Ends in :</span>
+                                    <span class="font-medium text-light endTime"> </span>
+                                </div>
+
                                 <span class="px-2 py-1 rounded-full text-xs
   <c:choose>
     <c:when test="${auctions.status eq 'PENDING'}">bg-orange-400/20 text-orange-400</c:when>

@@ -14,5 +14,10 @@ public class BrodcastUtil {
             webSoketBrodcaster1.sendBidResults(currentBid,auctionId);
         }
     }
+    public static void sendauctionEndTime(Long auctionId,String endTime) {
+        if(webSoketBrodcaster1 != null) {
+            webSoketBrodcaster1.sendAuctionEndTime(auctionId,endTime);
+        }
+    }
 
 }

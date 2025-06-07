@@ -12,7 +12,6 @@ import lk.jiat.auction.ejb.repository.AuctionsRepo;
 import java.math.BigDecimal;
 import java.util.*;
 
-
 @Stateless
 public class AuctionServiceSessionBean implements AuctionServices {
 
@@ -25,21 +24,16 @@ public class AuctionServiceSessionBean implements AuctionServices {
     @Inject
     private AuctionsRepo auctionsRepo;
 
-
     @Override
     public void addAuction(Auction auction) {
         try (
-
                 Connection connection = connectionFactory.createConnection();
              Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE))
         {
-
             MessageProducer producer = session.createProducer(auctionQueue);
             ObjectMessage message = session.createObjectMessage();
             message.setObject(auction);
-
             auctionsRepo.save(auction);
-
             producer.send(message);
             System.out.println("Auction sent with client acknowledgment");
         } catch (JMSException e) {

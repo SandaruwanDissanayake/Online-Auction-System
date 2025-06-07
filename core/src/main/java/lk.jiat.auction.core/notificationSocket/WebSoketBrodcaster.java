@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public interface WebSoketBrodcaster {
     void sendBidResults(BigDecimal currentBid,Long auctionId);
-//    void sendUpdatedBidResults(BigDecimal currentBid,Long auctionId);
+    void sendAuctionEndTime(Long auctionId,String auctionEndTime);
+
 }
 
