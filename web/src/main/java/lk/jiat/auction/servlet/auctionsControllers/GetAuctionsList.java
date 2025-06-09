@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lk.jiat.auction.core.model.auction.Auction;
+import lk.jiat.auction.core.model.auction.AuctionStatus;
 import lk.jiat.auction.core.model.bids.Bids;
 import lk.jiat.auction.ejb.remote.auctions.AuctionServices;
 import lk.jiat.auction.ejb.remote.bids.BidsServices;
@@ -43,6 +44,7 @@ public class GetAuctionsList extends HttpServlet {
         Set<Long> bidAuctionIds = new HashSet<>();
         for (Bids bid : bids) {
             Auction bidAuction = bid.getAuction();
+
             System.out.println("...............................MAX BID...................................."+bid.getMaxBid());
 
             if (bidAuction != null) {

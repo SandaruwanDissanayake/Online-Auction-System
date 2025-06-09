@@ -1,5 +1,6 @@
 package lk.jiat.auction.ejb.bean;
 
+import jakarta.ejb.Stateful;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import lk.jiat.auction.core.model.auth.User;
@@ -9,7 +10,7 @@ import lk.jiat.auction.ejb.repository.UsersRepo;
 import java.util.List;
 import java.util.Optional;
 
-@Stateless
+@Stateful
 public class UserServiceSessionBean implements UserService {
 
     @Inject

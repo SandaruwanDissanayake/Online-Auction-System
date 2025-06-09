@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import lk.jiat.auction.core.dto.BidDTO;
 import lk.jiat.auction.core.dto.UpdateBidDTO;
 import lk.jiat.auction.core.model.auction.Auction;
+import lk.jiat.auction.core.model.auction.AuctionStatus;
 import lk.jiat.auction.core.model.auth.User;
 import lk.jiat.auction.core.model.bids.BidStatus;
 import lk.jiat.auction.core.model.bids.Bids;
@@ -17,6 +18,7 @@ import lk.jiat.auction.ejb.repository.BidsRepo;
 import lk.jiat.auction.ejb.repository.UsersRepo;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -119,13 +121,20 @@ public class BidsServiceSessionBean implements BidsServices {
         // Fetch bids with auctions in a single query (assuming JPA relationship)
         List<Bids> bids = bidsRepo.findByBidderEmail(email);
         // Update maxBid directly from the already-loaded auction
+
+        List<Bids> bids1 = new ArrayList<Bids>();
+
         for (Bids bid : bids) {
            Auction auction= auctionServices.getAuction(bid.getAuction().getId());
-            if (auction != null) {
+
+           if (auction != null ) {
                 bid.setMaxBid(auction.getCurrentBid());
+               if (auction.getStatus() != AuctionStatus.CLOSED){
+                   bids1.add(bid);
+               }
             }
         }
-        return bids;
+        return bids1;
     }
 
     @Override

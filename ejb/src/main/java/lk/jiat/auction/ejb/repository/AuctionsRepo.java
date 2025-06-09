@@ -51,7 +51,7 @@ public class AuctionsRepo {
                 new BigDecimal("24500.00"),
                 null,
                 new Date(System.currentTimeMillis() - 432000000), // Started 5 days ago
-                new Date(System.currentTimeMillis() + 86400000), // Ends in 1 day
+                new Date(System.currentTimeMillis() + 66400000), // Ends in 1 day
                 AuctionStatus.ACTIVE,
                 null
         ));
@@ -107,10 +107,20 @@ public class AuctionsRepo {
         List<Auction> result = new ArrayList<>();
         for (Auction auction : AUCTION_MAP.values()) {
             String lastBidder = auction.getLastBidderEmail();
-            if (email == null || lastBidder == null || !lastBidder.equals(email)) {
+            if (auction.getStatus() != AuctionStatus.CLOSED &&
+                    (email == null || lastBidder == null || !lastBidder.equals(email))) {
                 result.add(auction);
             }
         }
         return result;
+    }
+    public void updateAuctionStatus(Long auctionId, AuctionStatus status) {
+        if (auctionId == null || status == null) return;
+
+        Optional<Auction> optionalAuction = findById(auctionId);
+        optionalAuction.ifPresent(auction -> {
+            auction.setStatus(status);
+            System.out.println("Auction status updated successfully for auction ID: " + auctionId);
+        });
     }
 }

@@ -48,18 +48,9 @@ public class BidProcessorMDB implements MessageListener {
 
                         BrodcastUtil.sendBrodcastCurrentBid(currentBid,auction.getId());
 
-
-
-                        List<Bids> bids= bidsServices.getAllBids();
-                        for (Bids bid : bids) {
-                            System.out.println(bid.getBidId() + " " + bid.getStatus() + " " + bid.getBidder().getEmail() + "..................... Bids Data");
-                        }
                     }else {
                         System.out.println("Bids not created");
-
-
                     }
-
                 } else {
                     System.err.println("Received wrong message type: " + obj.getClass());
                 }

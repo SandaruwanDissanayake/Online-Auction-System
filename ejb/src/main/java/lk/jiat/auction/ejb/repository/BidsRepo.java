@@ -107,21 +107,12 @@ public class BidsRepo {
         ));
     }
 
-    // Add repository methods here
     public Optional<Bids> findById(Long id) {
         return Optional.ofNullable(BIDS_MAP.get(id));
     }
 
     public boolean save(Bids bid) {
         BIDS_MAP.put(bid.getBidId(), bid);
-
-        System.out.println(".......................................................................................");
-
-//        System.out.println(bid.getAuction().getTitle());
-        //System.out.println(bid.getBidder().getEmail());
-       // System.out.println(bid.getAmount());
-
-       // System.out.println(".......................................................................................");
 
         return true;
     }

@@ -17,16 +17,10 @@ import java.util.logging.Logger;
 @Startup
 public class AuctionEndTimeListener {
     private static final Logger LOG = Logger.getLogger(AuctionEndTimeListener.class.getName());
-
-    // For performance monitoring
     private static final boolean DEBUG_MODE = true;
     private long lastExecutionTime = 0;
-
     @EJB
     private AuctionServices auctionServices;
-
-
-    // Runs every second (1000 milliseconds)
     @Schedule(second = "*/1", minute = "*", hour = "*", persistent = false)
     public void checkAndCloseEndedAuctions() {
         if(DEBUG_MODE) {
@@ -48,8 +42,8 @@ public class AuctionEndTimeListener {
             try {
                 if (now.after(auction.getEndTime())) {
                     // Update auction status
-//                    auction.setStatus(AuctionStatus.CLOSED);
-//                    auctionServices.updateAuction(auction);
+                  // auction.setStatus(AuctionStatus.CLOSED);
+                    auctionServices.updateStatus(auction.getId(),AuctionStatus.CLOSED);
 
                     //LOG.info("Closed auction ID: " + auction.getId() +
                             //" | End time was: " + auction.getEndTime());

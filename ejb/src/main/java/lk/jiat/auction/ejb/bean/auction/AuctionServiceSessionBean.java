@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.jms.*;
 import jakarta.jms.Queue;
 import lk.jiat.auction.core.model.auction.Auction;
+import lk.jiat.auction.core.model.auction.AuctionStatus;
 import lk.jiat.auction.ejb.remote.auctions.AuctionServices;
 import lk.jiat.auction.ejb.repository.AuctionsRepo;
 
@@ -70,5 +71,10 @@ public class AuctionServiceSessionBean implements AuctionServices {
     public List<Auction> getAuctionsByWithoutEmail(String email) {
 
         return auctionsRepo.getAuctionsByWithoutEmail(email);
+    }
+
+    @Override
+    public void updateStatus(Long auctionId, AuctionStatus status) {
+        auctionsRepo.updateAuctionStatus(auctionId,status);
     }
 }
