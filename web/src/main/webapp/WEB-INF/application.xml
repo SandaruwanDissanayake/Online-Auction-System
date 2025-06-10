@@ -1,0 +1,12 @@
+<application>
+    <module>
+        <ejb>auction-ejb.jar</ejb>
+    </module>
+    <module>
+        <web>
+            <web-uri>auction-web.war</web-uri>
+            <context-root>/</context-root>
+        </web>
+        <ejb>auction-ejb.jar</ejb>
+    </module>
+</application>
