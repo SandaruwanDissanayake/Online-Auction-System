@@ -15,7 +15,9 @@ public class AuthFilter implements Filter {
             "/login.jsp",
             "/assets/",
             "/error/",
-            "/javax.faces.resource/"  // If using JSF
+            "/javax.faces.resource/",
+            "/index.jsp",
+            "/welcome.jsp"// If using JSF
     };
 
     @Override
@@ -35,7 +37,7 @@ public class AuthFilter implements Filter {
         HttpSession session = request.getSession(false);
 
         // Redirect to login if not authenticated
-        if (session == null || session.getAttribute("username") == null) {
+        if (session == null || session.getAttribute("email") == null) {
             // Determine the appropriate login page based on the path
             String loginPage = (path.startsWith("/auctioneer") || path.startsWith("/bidder"))
                     ? "/auth/login.jsp"

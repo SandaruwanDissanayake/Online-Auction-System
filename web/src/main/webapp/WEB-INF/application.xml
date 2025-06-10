@@ -5,7 +5,8 @@
     <module>
         <web>
             <web-uri>auction-web.war</web-uri>
-            <context-root>/auction</context-root>
+            <context-root>/</context-root>
         </web>
+        <ejb>auction-ejb.jar</ejb>
     </module>
 </application>
